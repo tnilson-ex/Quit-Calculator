@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EX Quit Cigarettes and Vaping Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"], input[type="number"], input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #00848e; /* Matched the logo color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #006970; /* Darker hover color */
+        }
+        .output {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>EX Quit Cigarettes and Vaping Calculator</h2>
+    
+    <!-- Cigarette inputs -->
+    <label for="cigarettes">Cigarettes per day:</label>
+    <input type="number" id="cigarettes" placeholder="Enter number of cigarettes">
+    
+    <label for="costCigarettes">Cost per pack (USD):</label>
+    <input type="text" id="costCigarettes" placeholder="Enter cost per pack (USD)" onblur="formatCurrency(this)">
+    
+    <label for="quitDateCigarettes">Quit date (Cigarettes):</label>
+    <input type="date" id="quitDateCigarettes">
+
+    <!-- Vaping inputs -->
+    <label for="pods">Pods/Cartridges per week:</label>
+    <input type="number" id="pods" placeholder="Enter number of pods/cartridges per week">
+
+    <label for="costPods">Cost per pod/cartridge (USD):</label>
+    <input type="text" id="costPods" placeholder="Enter cost per pod/cartridge (USD)" onblur="formatCurrency(this)">
+    
+    <label for="quitDateVaping">Quit date (Vaping):</label>
+    <input type="date" id="quitDateVaping">
+    
+    <button onclick="calculateResults()">Calculate</button>
+    <button onclick="resetFields()">Reset</button>
+    <button onclick="copyResults()">Copy to Clipboard</button>
+    
+    <div class="output" id="results"></div>
+</div>
+
+<script>
+    function formatCurrency(input) {
+        let value = input.value.replace(/[^0-9.]/g, ''); // Strip out non-numeric characters
+        if (value) {
+            input.value = parseFloat(value).toFixed(2); // Ensure two decimal places
+        }
+    }
+
+    function calculateResults() {
+        // Cigarette data
+        const cigarettesPerDay = document.getElementById('cigarettes').value || 0;
+        const costPerPack = parseFloat(document.getElementById('costCigarettes').value) || 0;
+        const quitDateCigarettes = document.getElementById('quitDateCigarettes').value ? new Date(document.getElementById('quitDateCigarettes').value) : null;
+
+        // Vaping data
+        const podsPerWeek = document.getElementById('pods').value || 0;
+        const costPerPod = parseFloat(document.getElementById('costPods').value) || 0;
+        const quitDateVaping = document.getElementById('quitDateVaping').value ? new Date(document.getElementById('quitDateVaping').value) : null;
+
+        const today = new Date();
+        
+        let daysQuitCigarettes = 0, cigarettesAvoided = 0, packsAvoided = 0, moneySavedCigarettes = 0;
+        let daysQuitVaping = 0, podsAvoided = 0, moneySavedVaping = 0;
+
+        // If quit date for cigarettes is provided, calculate the cigarette-related data
+        if (quitDateCigarettes) {
+            daysQuitCigarettes = Math.floor((today - quitDateCigarettes) / (1000 * 60 * 60 * 24));
+            cigarettesAvoided = cigarettesPerDay * daysQuitCigarettes;
+            packsAvoided = cigarettesAvoided / 20; // assuming 20 cigarettes per pack
+            moneySavedCigarettes = packsAvoided * costPerPack;
+
+            // Life saved calculations for smoking (11 minutes per cigarette)
+            const minutesPerCig = 11;
+            const minutesSaved = cigarettesAvoided * minutesPerCig;
+            const hoursSaved = minutesSaved / 60;
+            const daysSaved = hoursSaved / 24;
+            const yearsSaved = daysSaved / 365;
+
+            document.getElementById('results').innerHTML += `
+                <p>Days since quitting (Cigarettes): ${daysQuitCigarettes.toLocaleString()}</p>
+                <p>Cigarettes avoided: ${cigarettesAvoided.toLocaleString()}</p>
+                <p>Money saved from smoking: $${moneySavedCigarettes.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                <p>Life saved from smoking in minutes: ${Math.round(minutesSaved).toLocaleString()}</p>
+                <p>Life saved from smoking in hours: ${Math.round(hoursSaved).toLocaleString()}</p>
+                <p>Life saved from smoking in days: ${Math.round(daysSaved).toLocaleString()}</p>
+                <p>Life saved from smoking in years: ${Math.round(yearsSaved * 100) / 100} years</p>
+            `;
+        }
+
+        // If quit date for vaping is provided, calculate the vaping-related data
+        if (quitDateVaping) {
+            daysQuitVaping = Math.floor((today - quitDateVaping) / (1000 * 60 * 60 * 24));
+            podsAvoided = (podsPerWeek / 7) * daysQuitVaping;
+            moneySavedVaping = podsAvoided * costPerPod;
+
+            document.getElementById('results').innerHTML += `
+                <p>Days since quitting (Vaping): ${daysQuitVaping.toLocaleString()}</p>
+                <p>Pods/Cartridges avoided: ${podsAvoided.toLocaleString()}</p>
+                <p>Money saved from vaping: $${moneySavedVaping.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                <p>Note: Reliable long-term data doesn't exist yet to make precise life expectancy impact calculations for vaping.</p>
+            `;
+        }
+
+        // Total money saved with comma formatting
+        const totalMoneySaved = moneySavedCigarettes + moneySavedVaping;
+        document.getElementById('results').innerHTML += `
+            <p>Total money saved: $${totalMoneySaved.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+        `;
+    }
+
+    function resetFields() {
+        document.getElementById('cigarettes').value = '';
+        document.getElementById('costCigarettes').value = '';
+        document.getElementById('quitDateCigarettes').value = '';
+        document.getElementById('pods').value = '';
+        document.getElementById('costPods').value = '';
+        document.getElementById('quitDateVaping').value = '';
+        document.getElementById('results').innerHTML = '';
+    }
+
+    function copyResults() {
+        const resultsText = document.getElementById('results').innerText;
+        if (resultsText) {
+            navigator.clipboard.writeText(resultsText);
+            alert("Results copied to clipboard! You're ready to go and share this information.");
+        } else {
+            alert("Please calculate the results first.");
+        }
+    }
+</script>
+
+</body>
+</html>
